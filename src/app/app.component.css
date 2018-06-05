@@ -1,0 +1,36 @@
+.map {
+    height: 100%;
+    padding: 0;
+}
+
+.crudeMapButton {
+    height: 50px; 
+    width: 50px; 
+    border-radius: 50px; 
+    background-color: green; 
+    z-index: 100000; 
+    position : absolute; 
+    bottom: 16px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.fontIcon {
+    position: relative;
+    top: 13px;
+    color: white;
+    font-size: 23px;
+}
+
+.customIconColor {
+    font-size: 22px !important;
+}
+
+.leaflet-div-icon-transparent-background {
+    background: none !important;
+    border : 0 !important;
+}
+
+.white-font-icon {
+    color : #fff !important;
+}

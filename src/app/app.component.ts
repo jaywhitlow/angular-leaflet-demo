@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
-import { tileLayer, latLng, polyline, icon, marker, Map, point, LatLng, LatLngBounds, featureGroup, layerGroup, circleMarker, circle, geoJSON, divIcon } from 'leaflet';
-import { fontAwesomeIcon } from './fontawesomeicon.control';
+import { tileLayer, latLng, polyline, icon, marker, Map, point, LatLng, LatLngBounds, featureGroup, layerGroup, circleMarker, circle, geoJSON, divIcon, GeoJSONOptions } from 'leaflet';
+import { customIcon, CustomIconContainerType } from './customicon.control';
+import { GeoJsonObject } from 'geojson';
+
 
 @Component({
   selector: 'app-root',
@@ -41,7 +43,7 @@ export class AppComponent {
   /*
     AMCS Maumee office
 
-    Standard marker with a standard icon
+    Standard marker with a standard built-in leaflet icon
   */
   amcsMaumeeMarker = marker([41.586731, -83.681754], {
     icon: icon({
@@ -55,74 +57,77 @@ export class AppComponent {
   /*
     Restaraunt marker
 
-    This is a GeoJSON example in which we use a call to geoJSON to place a marker
-    on the map
+    This is a GeoJSON example
   */
-  buffaloWildWingsMarker = marker([ 41.581863, -83.677389 ], {
-    icon: icon({
-      iconSize: [ 25, 41 ],
-      iconAnchor: [ 13, 41 ],
-      iconUrl: 'leaflet/marker-icon.png',
-      shadowUrl: 'leaflet/marker-shadow.png'
-    })
-  }).bindPopup('<div>Buffalo Wild Wings</div><div>Some Address St.</div><div>Maumee, OH 43537</div>');
-
-  // home marker for jay's house
-  // homeMarker = marker([ 41.595911, -83.696077 ], {
-  //   icon: icon({
-  //     iconSize: [ 25, 41 ],
-  //     iconAnchor: [ 13, 41 ],
-  //     iconUrl: 'leaflet/marker-icon.png',
-  //     shadowUrl: 'leaflet/marker-shadow.png',
-  //     className: "fas fa-user"
-  //   })
-  // }).bindPopup('<div>Home Station</div><div>Valley Stream Blvd.</div><div>Maumee OH, 43537</div>');
+  buffaloWildWingsMarker = geoJSON({
+    "type": "Feature",
+    "properties": {
+      "name": "Buffalo Wild Wings",
+      "amenity": "Restaraunt",
+      "popupContent": "This is a tasty restaraunt"
+    },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-83.677389, 41.581863]
+    },
+    "id": 1
+  } as GeoJsonObject, {
+    pointToLayer: (feature, latLng) => {
+      return marker(latLng, {icon: icon({
+            iconSize: [ 25, 41 ],
+            iconAnchor: [ 13, 41 ],
+            iconUrl: 'leaflet/marker-icon.png',
+            shadowUrl: 'leaflet/marker-shadow.png'
+      })});
+    }
+  }).bindPopup('Buffalo Wild Wings! (GeoJSON marker)');
 
   /*
     Home marker for jay's fortress of solitude.
 
-    This is a standard marker, but uses a divIcon which allows us to put in custom HTML code, which
-    in turn enables us to use a library like FontAwesome
-  */
-  // homeMarker = marker([ 41.595911, -83.696077 ], {
-  //   icon: divIcon({
-  //     iconAnchor: [ 18, 41 ],
-  //     className: "leaflet-div-icon-transparent-background",
-  //     html: "<div class='awesome-marker awesome-marker-icon-darkred'><i style='color: #fff' class='fas fa-recycle'></i></div>"
-  //   })
-  // }).bindPopup('<div>Home Station</div><div>Valley Stream Blvd.</div><div>Maumee OH, 43537</div>');
+    This is a standard marker, but uses a divIcon which allows us to put in custom HTML code in place
+    of the built-in leaflet marker images
 
+    Note: The CSS and sprite used for this example is taken from the Leaflet.awesome-markers package
+  */
   homeMarker = marker([ 41.595911, -83.696077 ], {
-    icon: fontAwesomeIcon({
-      containerColor: "red",
-      containerType: "marker",
-      iconName: "recycle",
-      iconColor: "white",
-      iconFontSize: 20
+    icon: divIcon({
+      iconAnchor: [ 18, 41 ],
+      className: "leaflet-div-icon-transparent-background",
+      html: "<div class='awesome-marker awesome-marker-icon-darkred'><i style='color: #fff' class='fas fa-recycle'></i></div>"
     })
   }).bindPopup('<div>Home Station</div><div>Valley Stream Blvd.</div><div>Maumee OH, 43537</div>');
 
   /*
-    Radius circle around jay's 
+    Marker that uses the customIcon class
+  */
+  customFontAwesomeMarker = marker([ 41.585631, -83.687254 ], {
+    icon: customIcon({
+      containerType: CustomIconContainerType.GpsMarker,
+      iconName: "flag-checkered",
+      containerColor: "#841ca4"
+    })
+  });
 
-    The radius property is in meters
+  /*
+    Same marker type as above, but uses a "box" container type instead of a GpsMarker
+  */
+  customFontAwesomeBlock = marker([41.590864, -83.689203], {
+    icon: customIcon({
+      containerType: CustomIconContainerType.Box,
+      iconName: "flag-checkered",
+      containerColor: "#098124"
+    })
+  });
+
+  /*
+    Radius circle around jay's ( radius is in meters )
   */
   homeMarkerRadius = circle([ 41.595911, -83.696077 ], {
     radius: 804.344,
     color : 'red',
     opacity: 0.3
   });
-
-  // geoJsonMarker = geoJSON(({
-  //   "type": "Feature",
-  //   "geometry": {
-  //     "type": "Point",
-  //     "coordinates": [41.605849, -83.664111]
-  //   },
-  //   "properties": {
-  //     "name": "Olive Garden"
-  //   }
-  // }) as any);
 
   // Route from home to amcs maumee
   routeFromHomeToWork = polyline([[41.595911, -83.696077],
@@ -189,7 +194,7 @@ export class AppComponent {
       'Jay\'s drive to work': this.routeFromHomeToWork,
       'Drive from work to food': this.routeFromWorkToFood,
       'Jay\'s Home Radius': this.homeMarkerRadius,
-      //'GeoJson Marker': this.geoJsonMarker
+      'Custom FontAwesomeMarker': this.customFontAwesomeMarker
     }
   };
 
@@ -201,7 +206,8 @@ export class AppComponent {
       this.homeMarker, 
       this.amcsMaumeeMarker, 
       this.routeFromWorkToFood, 
-      //this.geoJsonMarker 
+      this.customFontAwesomeMarker,
+      this.customFontAwesomeBlock
     ],
     zoom: 7,
     center: latLng([ 41.588295, -83.680579 ])
@@ -227,7 +233,14 @@ export class AppComponent {
       By adding all of the given routes, markers, etc., to a feature group, we can call the getBounds method on the feature group instead of 
       individual layers, which allows us to get the bounds of all of our secondary layers ( markers, polylines, etc., etc. )
     */
-    const markerGroup = featureGroup([this.routeFromHomeToWork, this.routeFromHomeToWork, this.amcsMaumeeMarker, this.buffaloWildWingsMarker, this.homeMarker]);
+    const markerGroup = featureGroup([
+      this.routeFromHomeToWork, 
+      this.routeFromHomeToWork, 
+      this.amcsMaumeeMarker, 
+      this.buffaloWildWingsMarker, 
+      this.homeMarker,
+      this.customFontAwesomeMarker
+    ]);
 
     map.fitBounds(markerGroup.getBounds(), {
       padding: point(15, 15),
